@@ -1,6 +1,6 @@
 /**
- * 우리 반 1인 1역할 배정기 - Apple 에디션 (script.js)
- * 순수 Vanilla JS 로직: 세련된 Glass Chime 오디오, 유려한 파티클, 무작위 셔플, A4 인쇄, 구글 시트 연동
+ * 우리 반 1인 1역할 배정기 - Pantone Mocha Mousse & Modern Celebration (script.js)
+ * 순수 Vanilla JS 로직: 모던 샴페인 쇼크웨이브 & 마이크로 스파클 팡파레, 웜 어쿠스틱 화음, 중앙 정렬 렌더링
  */
 
 // ==========================================
@@ -38,9 +38,9 @@ let state = {
 };
 
 // ==========================================
-// 2. Apple 스타일 어쿠스틱 글래스 사운드 (Web Audio API)
+// 2. 모던 웜 어쿠스틱 사운드 (Web Audio API)
 // ==========================================
-class AppleSoundFX {
+class ModernAcousticSound {
   constructor() {
     this.ctx = null;
   }
@@ -52,7 +52,7 @@ class AppleSoundFX {
     }
   }
 
-  // 부드러운 햅틱 글래스 틱 (Soft haptic pop)
+  // 부드러운 햅틱 글래스 틱
   playTick() {
     try {
       this.init();
@@ -63,8 +63,8 @@ class AppleSoundFX {
       const gain = this.ctx.createGain();
       
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(600 + Math.random() * 240, this.ctx.currentTime);
-      gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+      osc.frequency.setValueAtTime(540 + Math.random() * 200, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.035, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.04);
       
       osc.connect(gain);
@@ -76,28 +76,31 @@ class AppleSoundFX {
     }
   }
 
-  // 맑고 영롱한 Apple Glass Chime
-  playTada() {
+  // 모던 로즈 피아노 & 샴페인 하모닉스 화음
+  playFanfare() {
     try {
       this.init();
       if (!this.ctx) return;
       if (this.ctx.state === 'suspended') this.ctx.resume();
 
-      const chords = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-      chords.forEach((freq, idx) => {
+      // 세련된 재즈/모던 코드: F4, A4, C5, E5, G5 (F Major 9)
+      const chord = [349.23, 440.00, 523.25, 659.25, 783.99];
+      chord.forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        const startTime = this.ctx.currentTime + idx * 0.07;
+        const startTime = this.ctx.currentTime + idx * 0.06;
         
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, startTime);
-        gain.gain.setValueAtTime(0.08, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.45);
+        
+        // 부드럽게 감싸는 벨(Bell) 사운드 엔벨로프
+        gain.gain.setValueAtTime(0.07, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.65);
         
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(startTime);
-        osc.stop(startTime + 0.45);
+        osc.stop(startTime + 0.65);
       });
     } catch (e) {
       // ignore
@@ -105,16 +108,17 @@ class AppleSoundFX {
   }
 }
 
-const sfx = new AppleSoundFX();
+const sfx = new ModernAcousticSound();
 
 // ==========================================
-// 3. Apple 스타일 세련된 파티클 축하 효과
+// 3. 모던 팡파레 효과 (골든 링 쇼크웨이브 & 샴페인 마이크로 스파클)
 // ==========================================
-class AppleConfettiEffect {
+class ModernFanfareEffect {
   constructor() {
     this.canvas = document.getElementById("confetti-canvas");
     this.ctx = this.canvas ? this.canvas.getContext("2d") : null;
     this.particles = [];
+    this.rings = [];
     this.animId = null;
     if (this.canvas) {
       this.resize();
@@ -132,20 +136,59 @@ class AppleConfettiEffect {
     if (!this.canvas || !this.ctx) return;
     this.resize();
     this.particles = [];
-    const colors = ["#0071e3", "#34c759", "#ff9500", "#af52de", "#ff2d55", "#5ac8fa"];
-    
-    for (let i = 0; i < 80; i++) {
+    this.rings = [];
+
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight * 0.38;
+
+    // 1. 모던 쇼크웨이브 펄스 링 2개 생성
+    this.rings.push({
+      x: centerX,
+      y: centerY,
+      radius: 10,
+      maxRadius: Math.min(window.innerWidth, window.innerHeight) * 0.65,
+      alpha: 0.6,
+      lineWidth: 3,
+      speed: 16
+    });
+
+    setTimeout(() => {
+      this.rings.push({
+        x: centerX,
+        y: centerY,
+        radius: 10,
+        maxRadius: Math.min(window.innerWidth, window.innerHeight) * 0.5,
+        alpha: 0.45,
+        lineWidth: 2,
+        speed: 12
+      });
+    }, 120);
+
+    // 2. 팬톤 웜 샴페인 & 모카 앰버 마이크로 스파클 파티클
+    const modernPalette = [
+      "#c69c6d", // 웜 골드
+      "#8a6552", // 모카 무스
+      "#dfba9d", // 샴페인 골드
+      "#f5e1d3", // 실키 크림
+      "#ffbe98", // 피치 퍼즈
+      "#ffffff"  // 화이트 스파클
+    ];
+
+    for (let i = 0; i < 75; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 9 + 3;
       this.particles.push({
-        x: window.innerWidth / 2 + (Math.random() - 0.5) * 200,
-        y: window.innerHeight / 2 - 100,
-        vx: (Math.random() - 0.5) * 14,
-        vy: -Math.random() * 12 - 4,
-        size: Math.random() * 6 + 5,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        rotation: Math.random() * 360,
-        rotationSpeed: (Math.random() - 0.5) * 8,
-        gravity: 0.35,
-        opacity: 1
+        x: centerX,
+        y: centerY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2.5,
+        radius: Math.random() * 3.5 + 2,
+        color: modernPalette[Math.floor(Math.random() * modernPalette.length)],
+        alpha: 1,
+        friction: 0.94, // 부드러운 감속
+        gravity: 0.18,  // 은은한 하강
+        sparkleSpeed: Math.random() * 0.2 + 0.1,
+        sparkleVal: Math.random() * Math.PI
       });
     }
 
@@ -158,26 +201,45 @@ class AppleConfettiEffect {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     let activeCount = 0;
-    this.particles.forEach((p) => {
+
+    // 링 그리기
+    this.rings.forEach(ring => {
+      if (ring.alpha > 0.01 && ring.radius < ring.maxRadius) {
+        activeCount++;
+        ring.radius += ring.speed;
+        ring.alpha *= 0.94;
+
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
+        this.ctx.strokeStyle = `rgba(198, 156, 109, ${ring.alpha})`;
+        this.ctx.lineWidth = ring.lineWidth;
+        this.ctx.stroke();
+        this.ctx.restore();
+      }
+    });
+
+    // 스파클 파티클 그리기
+    this.particles.forEach(p => {
+      p.vx *= p.friction;
+      p.vy *= p.friction;
+      p.vy += p.gravity;
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += p.gravity;
-      p.rotation += p.rotationSpeed;
-      p.opacity -= 0.01;
+      p.alpha -= 0.012;
+      p.sparkleVal += p.sparkleSpeed;
 
-      if (p.opacity > 0 && p.y < window.innerHeight) {
+      if (p.alpha > 0.01) {
         activeCount++;
+        const currentRadius = Math.max(1, p.radius * (0.8 + 0.4 * Math.sin(p.sparkleVal)));
+
         this.ctx.save();
-        this.ctx.translate(p.x, p.y);
-        this.ctx.rotate((p.rotation * Math.PI) / 180);
-        this.ctx.fillStyle = p.color;
-        this.ctx.globalAlpha = Math.max(0, p.opacity);
-        // 부드러운 둥근 사각형 파티클
         this.ctx.beginPath();
-        const r = 2;
-        const w = p.size;
-        const h = p.size * 1.3;
-        this.ctx.roundRect(-w / 2, -h / 2, w, h, r);
+        this.ctx.arc(p.x, p.y, currentRadius, 0, Math.PI * 2);
+        this.ctx.fillStyle = p.color;
+        this.ctx.globalAlpha = Math.max(0, p.alpha);
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = p.color;
         this.ctx.fill();
         this.ctx.restore();
       }
@@ -192,7 +254,7 @@ class AppleConfettiEffect {
   }
 }
 
-let confetti = null;
+let fanfare = null;
 
 // ==========================================
 // 4. 로컬 스토리지 저장 및 불러오기
@@ -206,7 +268,7 @@ function saveToStorage() {
       assignments: state.assignments,
       sheetUrl: state.sheetUrl
     };
-    localStorage.setItem("class_role_picker_apple_v1", JSON.stringify(data));
+    localStorage.setItem("class_role_picker_pantone_v1", JSON.stringify(data));
   } catch (e) {
     console.warn("저장 오류:", e);
   }
@@ -214,8 +276,8 @@ function saveToStorage() {
 
 function loadFromStorage() {
   try {
-    const saved = localStorage.getItem("class_role_picker_apple_v1") || 
-                  localStorage.getItem("class_role_picker_pixel_v1") || 
+    const saved = localStorage.getItem("class_role_picker_pantone_v1") || 
+                  localStorage.getItem("class_role_picker_apple_v1") || 
                   localStorage.getItem("class_role_picker_v1");
     if (saved) {
       const data = JSON.parse(saved);
@@ -313,13 +375,22 @@ function finalizeAssignment() {
     btnAssign.disabled = false;
   }
 
-  sfx.playTada();
-  if (confetti) confetti.start();
-  showToast("🎉 1인 1역할 배정이 완료되었습니다.");
+  // 모던 사운드 & 모던 샴페인 쇼크웨이브 팡파레 트리거
+  sfx.playFanfare();
+  if (fanfare) fanfare.start();
+
+  // 카드에 은은한 골든 아우라 효과 부여
+  const cards = document.querySelectorAll(".role-card");
+  cards.forEach(card => card.classList.add("celebration-glow"));
+  setTimeout(() => {
+    cards.forEach(card => card.classList.remove("celebration-glow"));
+  }, 1400);
+
+  showToast("✨ 1인 1역할이 성공적으로 배정되었습니다.");
 }
 
 // ==========================================
-// 6. UI 렌더링 (Apple Bento Grid 카드)
+// 6. UI 렌더링 (★ 이름 중앙 정렬 완벽 적용 ★)
 // ==========================================
 function renderCards() {
   const container = document.getElementById("cards-grid");
@@ -335,6 +406,7 @@ function renderCards() {
     const initial = item.studentName ? item.studentName.charAt(0) : "•";
     const padNumber = String(index + 1).padStart(2, "0");
 
+    // 학생 이름 및 아바타, 교환 버튼이 깔끔하게 중앙 정렬되는 레이아웃
     card.innerHTML = `
       <div class="card-top-tag">ROLE ${padNumber}</div>
       <div class="role-icon-box" title="${escapeHtml(item.roleTitle)}">
@@ -348,10 +420,10 @@ function renderCards() {
         <div class="student-left">
           <div class="student-avatar">${escapeHtml(initial)}</div>
           <span class="student-name">${escapeHtml(item.studentName)}</span>
+          <button class="btn-card-swap no-print" onclick="window.onSwapClick(${index})" title="다른 친구와 역할 바꾸기">
+            🔄 역할 교환
+          </button>
         </div>
-        <button class="btn-card-swap no-print" onclick="window.onSwapClick(${index})" title="다른 친구와 역할 바꾸기">
-          교환
-        </button>
       </div>
     `;
 
@@ -561,7 +633,7 @@ function initSheetIntegration() {
 
         saveToStorage();
         renderCards();
-        sfx.playTada();
+        sfx.playFanfare();
         showToast("🎉 구글 스프레드시트 데이터를 성공적으로 불러왔습니다!");
       } catch (err) {
         console.error("Sheet load error:", err);
@@ -594,12 +666,12 @@ function initSheetIntegration() {
           body: JSON.stringify(payload)
         });
 
-        sfx.playTada();
+        sfx.playFanfare();
         showToast("💾 구글 스프레드시트에 안전하게 저장되었습니다!");
       } catch (err) {
         console.error("Sheet save error:", err);
         copyResultToClipboard();
-        alert("구글 시트 저장 중 통신 에러가 발생하여, 클립보드에 결과 텍스트를 먼저 복사해 두었습니다. 시트에 붙여넣기(Ctrl+V)하실 수 있습니다.");
+        alert("구글 시트 저장 중 통신 에러가 발생하여 클립보드에 결과 텍스트를 먼저 복사해 두었습니다. 시트에 붙여넣기(Ctrl+V)하실 수 있습니다.");
       }
     });
   }
@@ -649,7 +721,7 @@ function initPrintAction() {
 }
 
 // ==========================================
-// 11. Apple 스타일 토스트 알림
+// 11. 토스트 알림 헬퍼
 // ==========================================
 function showToast(message) {
   const container = document.getElementById("toast-container");
@@ -664,7 +736,7 @@ function showToast(message) {
   setTimeout(() => {
     toast.style.opacity = "0";
     toast.style.transform = "translateY(10px) scale(0.96)";
-    toast.style.transition = "all 0.25s var(--ease-apple)";
+    toast.style.transition = "all 0.25s var(--ease-modern)";
     setTimeout(() => toast.remove(), 250);
   }, 2600);
 }
@@ -683,7 +755,7 @@ function escapeHtml(str) {
 // 12. 초기화 이벤트 바인딩
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-  confetti = new AppleConfettiEffect();
+  fanfare = new ModernFanfareEffect();
   loadFromStorage();
 
   const titleInput = document.getElementById("class-title-input");
