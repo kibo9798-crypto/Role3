@@ -1,6 +1,6 @@
 /**
- * 우리 반 1인 1역할 배정기 (script.js)
- * 순수 Vanilla JS 로직: 무작위 매칭, Web Audio 사운드, 폭죽 효과, A4 인쇄, 구글 시트 연동 준비
+ * 우리 반 1인 1역할 배정기 - Apple 에디션 (script.js)
+ * 순수 Vanilla JS 로직: 세련된 Glass Chime 오디오, 유려한 파티클, 무작위 셔플, A4 인쇄, 구글 시트 연동
  */
 
 // ==========================================
@@ -32,15 +32,15 @@ let state = {
   className: "행복 가득 3학년 2반",
   students: [...DEFAULT_STUDENTS],
   roles: [...DEFAULT_ROLES],
-  assignments: [], // [{ roleId, roleTitle, roleIcon, roleDesc, studentName }]
+  assignments: [],
   sheetUrl: "",
   isRolling: false
 };
 
 // ==========================================
-// 2. 사운드 효과 (Web Audio API - 외부 파일 불필요)
+// 2. Apple 스타일 어쿠스틱 글래스 사운드 (Web Audio API)
 // ==========================================
-class SoundFX {
+class AppleSoundFX {
   constructor() {
     this.ctx = null;
   }
@@ -52,6 +52,7 @@ class SoundFX {
     }
   }
 
+  // 부드러운 햅틱 글래스 틱 (Soft haptic pop)
   playTick() {
     try {
       this.init();
@@ -61,41 +62,42 @@ class SoundFX {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(440 + Math.random() * 200, this.ctx.currentTime);
-      gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600 + Math.random() * 240, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.04);
       
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start();
-      osc.stop(this.ctx.currentTime + 0.05);
+      osc.stop(this.ctx.currentTime + 0.04);
     } catch (e) {
-      // Audio might be blocked by browser policy
+      // Audio might be blocked
     }
   }
 
+  // 맑고 영롱한 Apple Glass Chime
   playTada() {
     try {
       this.init();
       if (!this.ctx) return;
       if (this.ctx.state === 'suspended') this.ctx.resume();
 
-      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
-      notes.forEach((freq, idx) => {
+      const chords = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      chords.forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        const startTime = this.ctx.currentTime + idx * 0.08;
+        const startTime = this.ctx.currentTime + idx * 0.07;
         
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, startTime);
-        gain.gain.setValueAtTime(0.12, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+        gain.gain.setValueAtTime(0.08, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.45);
         
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(startTime);
-        osc.stop(startTime + 0.35);
+        osc.stop(startTime + 0.45);
       });
     } catch (e) {
       // ignore
@@ -103,12 +105,12 @@ class SoundFX {
   }
 }
 
-const sfx = new SoundFX();
+const sfx = new AppleSoundFX();
 
 // ==========================================
-// 3. 축하 폭죽 효과 (Pure Canvas Confetti)
+// 3. Apple 스타일 세련된 파티클 축하 효과
 // ==========================================
-class ConfettiEffect {
+class AppleConfettiEffect {
   constructor() {
     this.canvas = document.getElementById("confetti-canvas");
     this.ctx = this.canvas ? this.canvas.getContext("2d") : null;
@@ -130,19 +132,19 @@ class ConfettiEffect {
     if (!this.canvas || !this.ctx) return;
     this.resize();
     this.particles = [];
-    const colors = ["#ff6b6b", "#fcc419", "#51cf66", "#339af0", "#cc5de8", "#ff922b"];
+    const colors = ["#0071e3", "#34c759", "#ff9500", "#af52de", "#ff2d55", "#5ac8fa"];
     
-    for (let i = 0; i < 90; i++) {
+    for (let i = 0; i < 80; i++) {
       this.particles.push({
         x: window.innerWidth / 2 + (Math.random() - 0.5) * 200,
         y: window.innerHeight / 2 - 100,
-        vx: (Math.random() - 0.5) * 16,
-        vy: -Math.random() * 14 - 4,
-        size: Math.random() * 8 + 4,
+        vx: (Math.random() - 0.5) * 14,
+        vy: -Math.random() * 12 - 4,
+        size: Math.random() * 6 + 5,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * 360,
-        rotationSpeed: (Math.random() - 0.5) * 12,
-        gravity: 0.38,
+        rotationSpeed: (Math.random() - 0.5) * 8,
+        gravity: 0.35,
         opacity: 1
       });
     }
@@ -161,7 +163,7 @@ class ConfettiEffect {
       p.y += p.vy;
       p.vy += p.gravity;
       p.rotation += p.rotationSpeed;
-      p.opacity -= 0.009;
+      p.opacity -= 0.01;
 
       if (p.opacity > 0 && p.y < window.innerHeight) {
         activeCount++;
@@ -170,7 +172,13 @@ class ConfettiEffect {
         this.ctx.rotate((p.rotation * Math.PI) / 180);
         this.ctx.fillStyle = p.color;
         this.ctx.globalAlpha = Math.max(0, p.opacity);
-        this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.4);
+        // 부드러운 둥근 사각형 파티클
+        this.ctx.beginPath();
+        const r = 2;
+        const w = p.size;
+        const h = p.size * 1.3;
+        this.ctx.roundRect(-w / 2, -h / 2, w, h, r);
+        this.ctx.fill();
         this.ctx.restore();
       }
     });
@@ -187,7 +195,7 @@ class ConfettiEffect {
 let confetti = null;
 
 // ==========================================
-// 4. 로컬 스토리지 상태 저장 및 복원
+// 4. 로컬 스토리지 저장 및 불러오기
 // ==========================================
 function saveToStorage() {
   try {
@@ -198,15 +206,17 @@ function saveToStorage() {
       assignments: state.assignments,
       sheetUrl: state.sheetUrl
     };
-    localStorage.setItem("class_role_picker_v1", JSON.stringify(data));
+    localStorage.setItem("class_role_picker_apple_v1", JSON.stringify(data));
   } catch (e) {
-    console.warn("로컬 저장 오류:", e);
+    console.warn("저장 오류:", e);
   }
 }
 
 function loadFromStorage() {
   try {
-    const saved = localStorage.getItem("class_role_picker_v1");
+    const saved = localStorage.getItem("class_role_picker_apple_v1") || 
+                  localStorage.getItem("class_role_picker_pixel_v1") || 
+                  localStorage.getItem("class_role_picker_v1");
     if (saved) {
       const data = JSON.parse(saved);
       if (data.className) state.className = data.className;
@@ -216,10 +226,9 @@ function loadFromStorage() {
       if (data.sheetUrl) state.sheetUrl = data.sheetUrl;
     }
   } catch (e) {
-    console.warn("저장된 데이터 로드 실패:", e);
+    console.warn("데이터 로드 실패:", e);
   }
 
-  // 초기 배정이 아직 없으면 기본 순서대로 초기화
   if (!state.assignments || state.assignments.length === 0) {
     initDefaultAssignments();
   }
@@ -236,7 +245,7 @@ function initDefaultAssignments() {
 }
 
 // ==========================================
-// 5. 역할 무작위 배정 (Fisher-Yates Shuffle)
+// 5. 역할 무작위 배정 로직 (Fisher-Yates)
 // ==========================================
 function shuffleArray(arr) {
   const result = [...arr];
@@ -257,7 +266,6 @@ function assignRolesRandomly() {
     btnAssign.disabled = true;
   }
 
-  // 카드에 셔플 애니메이션 클래스 부여
   const cards = document.querySelectorAll(".role-card");
   cards.forEach(card => card.classList.add("shuffling"));
 
@@ -267,7 +275,6 @@ function assignRolesRandomly() {
     sfx.playTick();
     tickCount++;
 
-    // 임시로 이름을 빠르게 교체하여 시각적 긴장감 부여
     const tempStudents = shuffleArray(state.students);
     const nameEls = document.querySelectorAll(".student-name");
     nameEls.forEach((el, i) => {
@@ -284,7 +291,6 @@ function assignRolesRandomly() {
 }
 
 function finalizeAssignment() {
-  // 실제 최종 무작위 셔플
   const shuffledStudents = shuffleArray(state.students);
 
   state.assignments = state.roles.map((role, idx) => {
@@ -307,14 +313,13 @@ function finalizeAssignment() {
     btnAssign.disabled = false;
   }
 
-  // 완료 효과음 & 폭죽
   sfx.playTada();
   if (confetti) confetti.start();
-  showToast("🎉 1인 1역할이 공정하게 배정되었습니다!");
+  showToast("🎉 1인 1역할 배정이 완료되었습니다.");
 }
 
 // ==========================================
-// 6. UI 렌더링
+// 6. UI 렌더링 (Apple Bento Grid 카드)
 // ==========================================
 function renderCards() {
   const container = document.getElementById("cards-grid");
@@ -327,11 +332,11 @@ function renderCards() {
     const card = document.createElement("div");
     card.className = `role-card card-theme-${themeIndex}`;
     
-    // 첫 글자 아바타
-    const initial = item.studentName ? item.studentName.charAt(0) : "★";
+    const initial = item.studentName ? item.studentName.charAt(0) : "•";
+    const padNumber = String(index + 1).padStart(2, "0");
 
     card.innerHTML = `
-      <div class="card-top-tag">#${index + 1}</div>
+      <div class="card-top-tag">ROLE ${padNumber}</div>
       <div class="role-icon-box" title="${escapeHtml(item.roleTitle)}">
         ${item.roleIcon || "⭐"}
       </div>
@@ -345,7 +350,7 @@ function renderCards() {
           <span class="student-name">${escapeHtml(item.studentName)}</span>
         </div>
         <button class="btn-card-swap no-print" onclick="window.onSwapClick(${index})" title="다른 친구와 역할 바꾸기">
-          🔄 교환
+          교환
         </button>
       </div>
     `;
@@ -364,7 +369,6 @@ function updateStatusSummary() {
     countPill.textContent = `배정 완료: ${assigned} / ${total}명 🌸`;
   }
 
-  // 관리 서랍 카운터 업데이트
   const studentCountEl = document.getElementById("drawer-student-count");
   if (studentCountEl) studentCountEl.textContent = `${state.students.length}명`;
 
@@ -397,13 +401,13 @@ window.onSwapClick = function(targetIndex) {
   const swapWithIdx = chosenNum - 1;
   const targetStudent = state.assignments[swapWithIdx].studentName;
 
-  // Swap
   state.assignments[targetIndex].studentName = targetStudent;
   state.assignments[swapWithIdx].studentName = currentPerson;
 
   saveToStorage();
   renderCards();
-  showToast(`✨ ${currentPerson}님과 ${targetStudent}님의 역할이 서로 바뀌었습니다.`);
+  sfx.playTick();
+  showToast(`✨ ${currentPerson}님과 ${targetStudent}님의 역할이 교환되었습니다.`);
 };
 
 // ==========================================
@@ -420,11 +424,10 @@ function initDrawer() {
   btnToggle.addEventListener("click", () => {
     const isOpen = drawer.classList.contains("open");
     if (!isOpen) {
-      // 열기: 텍스트에디터 채우기
       txtStudents.value = state.students.join("\n");
       txtRoles.value = state.roles.map(r => `${r.icon} | ${r.title} | ${r.desc}`).join("\n");
       drawer.classList.add("open");
-      btnToggle.textContent = "✕ 편집 닫기";
+      btnToggle.textContent = "✕ 닫기";
     } else {
       drawer.classList.remove("open");
       btnToggle.innerHTML = "✏️ 명단·역할 관리";
@@ -461,7 +464,6 @@ function initDrawer() {
         }
       });
 
-      // 기존 배정 재정렬
       initDefaultAssignments();
       saveToStorage();
       renderCards();
@@ -501,7 +503,6 @@ function initSheetIntegration() {
   const btnSaveUrl = document.getElementById("btn-save-sheet-url");
   const btnTestDemo = document.getElementById("btn-test-sheet-demo");
 
-  // 모달 제어
   function openModal() {
     if (inputUrl) inputUrl.value = state.sheetUrl || "";
     modal.classList.add("active");
@@ -560,6 +561,7 @@ function initSheetIntegration() {
 
         saveToStorage();
         renderCards();
+        sfx.playTada();
         showToast("🎉 구글 스프레드시트 데이터를 성공적으로 불러왔습니다!");
       } catch (err) {
         console.error("Sheet load error:", err);
@@ -572,14 +574,13 @@ function initSheetIntegration() {
   if (btnSave) {
     btnSave.addEventListener("click", async () => {
       if (!state.sheetUrl) {
-        // 간편 복사 제안
         copyResultToClipboard();
         openModal();
-        showToast("📋 결과가 클립보드에 복사되었습니다! (시트 URL 설정 안내)");
+        showToast("📋 결과가 복사되었습니다. (시트 연동 안내)");
         return;
       }
 
-      showToast("⏳ 구글 시트로 배정 결과를 전송하는 중...");
+      showToast("⏳ 구글 시트로 배정 결과를 저장하는 중...");
       try {
         const payload = {
           className: state.className,
@@ -587,23 +588,22 @@ function initSheetIntegration() {
           assignments: state.assignments
         };
 
-        const res = await fetch(state.sheetUrl, {
+        await fetch(state.sheetUrl, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(payload)
         });
 
-        showToast("💾 구글 스프레드시트에 결과가 안전하게 저장되었습니다!");
+        sfx.playTada();
+        showToast("💾 구글 스프레드시트에 안전하게 저장되었습니다!");
       } catch (err) {
         console.error("Sheet save error:", err);
-        // 실패 시에도 클립보드 복사 제공
         copyResultToClipboard();
         alert("구글 시트 저장 중 통신 에러가 발생하여, 클립보드에 결과 텍스트를 먼저 복사해 두었습니다. 시트에 붙여넣기(Ctrl+V)하실 수 있습니다.");
       }
     });
   }
 
-  // 모달 내 데모 데이터 시뮬레이션
   if (btnTestDemo) {
     btnTestDemo.addEventListener("click", () => {
       state.students = [
@@ -613,7 +613,8 @@ function initSheetIntegration() {
       ];
       closeModal();
       renderCards();
-      showToast("🌱 테스트용 12명 데이터가 성공적으로 반영되었습니다!");
+      sfx.playTick();
+      showToast("🌱 기본 12명 데이터가 성공적으로 반영되었습니다!");
     });
   }
 }
@@ -626,7 +627,7 @@ function copyResultToClipboard() {
     "------------------------------------",
     ...state.assignments.map((a, i) => `${i + 1}. ${a.roleIcon} ${a.roleTitle} : ${a.studentName} (${a.roleDesc})`),
     "------------------------------------",
-    "내가 맡은 역할에 최선을 다해 행복한 교실을 만들어요! 🌟"
+    "내가 맡은 역할에 정성을 다하여 행복한 우리 반을 만들어요! 🌟"
   ];
   const text = lines.join("\n");
   navigator.clipboard.writeText(text).catch(() => {});
@@ -639,7 +640,7 @@ function initPrintAction() {
   const btnPrint = document.getElementById("btn-print");
   if (btnPrint) {
     btnPrint.addEventListener("click", () => {
-      showToast("🖨️ A4 인쇄 미리보기 화면을 준비합니다.");
+      showToast("🖨️ A4 교실 게시판 인쇄를 준비합니다.");
       setTimeout(() => {
         window.print();
       }, 250);
@@ -648,7 +649,7 @@ function initPrintAction() {
 }
 
 // ==========================================
-// 11. 토스트 알림 헬퍼
+// 11. Apple 스타일 토스트 알림
 // ==========================================
 function showToast(message) {
   const container = document.getElementById("toast-container");
@@ -662,12 +663,12 @@ function showToast(message) {
 
   setTimeout(() => {
     toast.style.opacity = "0";
-    toast.style.transition = "opacity 0.3s ease";
-    setTimeout(() => toast.remove(), 300);
+    toast.style.transform = "translateY(10px) scale(0.96)";
+    toast.style.transition = "all 0.25s var(--ease-apple)";
+    setTimeout(() => toast.remove(), 250);
   }, 2600);
 }
 
-// HTML 특수문자 이스케이프 방어
 function escapeHtml(str) {
   if (!str) return "";
   return String(str)
@@ -682,10 +683,9 @@ function escapeHtml(str) {
 // 12. 초기화 이벤트 바인딩
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-  confetti = new ConfettiEffect();
+  confetti = new AppleConfettiEffect();
   loadFromStorage();
 
-  // 학급명 입력 바인딩
   const titleInput = document.getElementById("class-title-input");
   if (titleInput) {
     titleInput.value = state.className;
@@ -695,18 +695,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 메인 배정 버튼
   const btnAssign = document.getElementById("btn-assign");
   if (btnAssign) {
     btnAssign.addEventListener("click", assignRolesRandomly);
   }
 
-  // 결과 복사 버튼
   const btnCopy = document.getElementById("btn-copy-result");
   if (btnCopy) {
     btnCopy.addEventListener("click", () => {
       copyResultToClipboard();
-      showToast("📋 전체 배정 결과가 텍스트로 복사되었습니다!");
+      sfx.playTick();
+      showToast("📋 전체 배정 결과가 클립보드에 복사되었습니다.");
     });
   }
 
